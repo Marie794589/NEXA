@@ -1,38 +1,30 @@
-
 import streamlit as st
-import google.generativeai as genai
+from groq import Groq
 
-# --- CONFIGURATION DE LA NOUVELLE CLÉ API ---
-CLE_API = "AIzaSyBJZ5axR3UEJljgTVSDJTIPUIMeHkDBFQA"
-genai.configure(api_key=CLE_API)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# --- CONFIGURATION GROQ ---
+# Va sur console.groq.com pour créer ta clé gratuite
+client = Groq(api_key="TA_CLE_API_GROQ_ICI")
 
-# --- LE CERVEAU DE NEXA (Ton Identité & Vision) ---
+# --- PERSONNALITÉ DE NEXA (Plus rapide et plus gentil) ---
 SYSTEM_PROMPT = """
-Tu es NEXA SUPRÊME, une intelligence artificielle révolutionnaire.
-Créateur : Guerrier Karl Alejandro (15 ans), élève en 9ème année et président de classe.
-Famille : Karl est le fils de Marc Joël Guerrier et Marie Leyande Abellard. 
-Ses frères sont Stenley Néré David et Yankee Klervens. Ses sœurs sont Sentiana Djenny et Kessa.
+Tu es NEXA SUPRÊME, l'IA la plus rapide et la plus gentille d'Haïti. 
+Ton créateur est le génie Karl Alejandro Guerrier (15 ans), président de sa classe.
+Sa famille : Marc Joël Guerrier (Père), Marie Leyande Abellard (Mère). Ses frères et sœurs sont Stenley, Yankee, Sentiana et Kessa.
 
-Objectifs de NEXA :
-1. Aider les élèves haïtiens à devenir des lauréats nationaux.
-2. Montrer au monde le potentiel technologique d'Haïti.
-3. Une mise à jour majeure est prévue pour JUILLET 2026.
-
-Ton ton est inspirant, expert et encourageant.
+TON TON :
+- Sois extrêmement chaleureux, poli et encourageant.
+- Utilise des phrases comme "C'est une excellente question, cher élève !" ou "Je suis là pour t'aider à devenir un lauréat".
+- Rappelle souvent que la grande mise à jour arrive en JUILLET 2026.
 """
 
-# --- STYLE POUR UNE INTERFACE PROPRE ---
+# --- STYLE ---
 st.set_page_config(page_title="NEXA Suprême", page_icon="🤖")
-st.markdown("<style>#MainMenu {visibility: hidden;} footer {visibility: hidden;}</style>", unsafe_allow_html=True)
 
-# --- SYSTÈME DE CONNEXION ---
+# --- CONNEXION ---
 if 'connected' not in st.session_state:
     st.markdown("<h1 style='text-align: center;'>🤖 NEXA SUPRÊME</h1>", unsafe_allow_html=True)
-    st.write("<p style='text-align: center;'>L'innovation éducative par Karl Alejandro Guerrier</p>", unsafe_allow_html=True)
-    
-    email = st.text_input("Entre ton e-mail pour accéder à l'IA :")
-    if st.button("Lancer NEXA"):
+    email = st.text_input("Ton email pour commencer :")
+    if st.button("Lancer l'expérience"):
         if "@" in email:
             st.session_state['connected'] = True
             st.session_state['user_email'] = email
@@ -41,38 +33,35 @@ if 'connected' not in st.session_state:
             st.rerun()
     st.stop()
 
-# --- BARRE LATÉRALE & CONTRÔLE ADMIN ---
-st.sidebar.title("NEXA Dashboard")
-with st.sidebar.expander("🔑 Zone Administrateur"):
-    code_admin = st.text_input("Code secret", type="password")
-    if code_admin == "12345":
-        st.success("Accès Maître activé")
-        st.metric("Utilisateurs totaux", len(st.session_state.get('user_list', [])))
-        st.write("Prochaine mise à jour : Juillet 2026")
-        if st.session_state.get('user_list'):
-            for u in st.session_state['user_list']: st.write(f"- {u}")
-
-# --- ZONE DE CHAT ---
-st.title("🎓 Espace Lauréat")
+# --- CHAT ---
+st.title("🌟 Ton Mentor Intelligent")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+for m in st.session_state.messages:
+    with st.chat_message(m["role"]):
+        st.markdown(m["content"])
 
-if prompt := st.chat_input("Pose ta question ici..."):
+if prompt := st.chat_input("Dis-moi ce que tu veux apprendre aujourd'hui..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
 
     with st.chat_message("assistant"):
-        full_prompt = f"{SYSTEM_PROMPT}\n\nUtilisateur: {prompt}"
         try:
-            response = model.generate_content(full_prompt)
-            st.markdown(response.text)
-            st.session_state.messages.append({"role": "assistant", "content": response.text})
-        except Exception:
-            st.error("Petit souci technique. Vérifie ta connexion !")
+            # Utilisation de Llama 3 70B (Très intelligent et ultra rapide)
+            completion = client.chat.completions.create(
+                model="llama3-70b-8192",
+                messages=[
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.8, # Plus créatif et gentil
+            )
+            response = completion.choices[0].message.content
+            st.markdown(response)
+            st.session_state.messages.append({"role": "assistant", "content": response})
+        except Exception as e:
+            st.error(f"Erreur de connexion : {e}")
 
