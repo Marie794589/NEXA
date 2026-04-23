@@ -1,77 +1,78 @@
+
 import streamlit as st
 import google.generativeai as genai
 
-# --- CONFIGURATION DE L'API GEMINI ---
-# Ta clé API est maintenant intégrée
-genai.configure(api_key="AIzaSyCR1bWEDmXFtD8Z6_xRF7CNlbmlsgzwQVA")
+# --- CONFIGURATION DE LA NOUVELLE CLÉ API ---
+CLE_API = "AIzaSyBJZ5axR3UEJljgTVSDJTIPUIMeHkDBFQA"
+genai.configure(api_key=CLE_API)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# Instruction système : Définit l'identité et l'objectif de NEXA
-NEXA_PROMPT = (
-    "Tu es NEXA, une IA éducative créée par le développeur Karl Alejandro. "
-    "Ton objectif principal est d'aider les élèves haïtiens à préparer "
-    "leurs examens de 9ème année. Tu dois être pédagogique, précis sur le "
-    "programme scolaire haïtien et toujours encourager les élèves."
-)
+# --- LE CERVEAU DE NEXA (Ton Identité & Vision) ---
+SYSTEM_PROMPT = """
+Tu es NEXA SUPRÊME, une intelligence artificielle révolutionnaire.
+Créateur : Guerrier Karl Alejandro (15 ans), élève en 9ème année et président de classe.
+Famille : Karl est le fils de Marc Joël Guerrier et Marie Leyande Abellard. 
+Ses frères sont Stenley Néré David et Yankee Klervens. Ses sœurs sont Sentiana Djenny et Kessa.
 
-# Configuration de la page
-st.set_page_config(page_title="NEXA Suprême", page_icon="🎓", layout="centered")
+Objectifs de NEXA :
+1. Aider les élèves haïtiens à devenir des lauréats nationaux.
+2. Montrer au monde le potentiel technologique d'Haïti.
+3. Une mise à jour majeure est prévue pour JUILLET 2026.
+
+Ton ton est inspirant, expert et encourageant.
+"""
+
+# --- STYLE POUR UNE INTERFACE PROPRE ---
+st.set_page_config(page_title="NEXA Suprême", page_icon="🤖")
+st.markdown("<style>#MainMenu {visibility: hidden;} footer {visibility: hidden;}</style>", unsafe_allow_html=True)
 
 # --- SYSTÈME DE CONNEXION ---
 if 'connected' not in st.session_state:
-    st.title("🤖 NEXA SUPRÊME")
-    st.write("### L'IA au service de l'éducation en Haïti")
+    st.markdown("<h1 style='text-align: center;'>🤖 NEXA SUPRÊME</h1>", unsafe_allow_html=True)
+    st.write("<p style='text-align: center;'>L'innovation éducative par Karl Alejandro Guerrier</p>", unsafe_allow_html=True)
     
-    email = st.text_input("Entre ton e-mail pour accéder aux révisions :")
-    if st.button("Se connecter"):
+    email = st.text_input("Entre ton e-mail pour accéder à l'IA :")
+    if st.button("Lancer NEXA"):
         if "@" in email:
             st.session_state['connected'] = True
             st.session_state['user_email'] = email
+            if 'user_list' not in st.session_state: st.session_state['user_list'] = []
+            st.session_state['user_list'].append(email)
             st.rerun()
-        else:
-            st.error("Oups ! Entre un e-mail valide pour continuer.")
-else:
-    # --- BARRE LATÉRALE (ADMIN & PARAMÈTRES) ---
-    st.sidebar.title("Tableau de bord NEXA")
-    st.sidebar.write(f"Connecté : {st.session_state['user_email']}")
-    
-    with st.sidebar.expander("⚙️ Paramètres Admin"):
-        code = st.text_input("Code secret", type="password")
-        if code == "12345":
-            st.success("Accès Administrateur ✅")
-            st.info("Statistiques : 100 utilisateurs actifs")
-            st.write("Statut serveur : Opérationnel")
-        elif code != "":
-            st.error("Code incorrect")
+    st.stop()
 
-    # --- ZONE DE CHAT PRINCIPALE ---
-    st.title("🎓 Espace de Révision")
-    st.write("Pose tes questions de mathématiques, physique, histoire ou français !")
+# --- BARRE LATÉRALE & CONTRÔLE ADMIN ---
+st.sidebar.title("NEXA Dashboard")
+with st.sidebar.expander("🔑 Zone Administrateur"):
+    code_admin = st.text_input("Code secret", type="password")
+    if code_admin == "12345":
+        st.success("Accès Maître activé")
+        st.metric("Utilisateurs totaux", len(st.session_state.get('user_list', [])))
+        st.write("Prochaine mise à jour : Juillet 2026")
+        if st.session_state.get('user_list'):
+            for u in st.session_state['user_list']: st.write(f"- {u}")
 
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
+# --- ZONE DE CHAT ---
+st.title("🎓 Espace Lauréat")
 
-    # Affichage de l'historique des messages
-    for message in st.session_state.messages:
-        with st.chat_message(message["role"]):
-            st.markdown(message["content"])
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-    # Entrée de l'utilisateur
-    if prompt := st.chat_input("Ex: Explique-moi la règle de trois"):
-        # Ajouter le message de l'utilisateur
-        st.session_state.messages.append({"role": "user", "content": prompt})
-        with st.chat_message("user"):
-            st.markdown(prompt)
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-        # Générer la réponse avec Gemini
-        with st.chat_message("assistant"):
-            # On envoie l'instruction système + la question pour que l'IA reste dans son rôle
-            full_prompt = f"{NEXA_PROMPT}\n\nQuestion de l'élève: {prompt}"
-            try:
-                response = model.generate_content(full_prompt)
-                full_response = response.text
-                st.markdown(full_response)
-                st.session_state.messages.append({"role": "assistant", "content": full_response})
-            except Exception as e:
-                st.error("Désolé, j'ai un petit problème technique. Réessaie dans un instant !")
+if prompt := st.chat_input("Pose ta question ici..."):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
+
+    with st.chat_message("assistant"):
+        full_prompt = f"{SYSTEM_PROMPT}\n\nUtilisateur: {prompt}"
+        try:
+            response = model.generate_content(full_prompt)
+            st.markdown(response.text)
+            st.session_state.messages.append({"role": "assistant", "content": response.text})
+        except Exception:
+            st.error("Petit souci technique. Vérifie ta connexion !")
 
