@@ -1,12 +1,13 @@
-import streamlit as st
+
+    import streamlit as st
 import google.generativeai as genai
 
-# --- CONFIGURATION DE TA CLÉ API (VERSION FINALE) ---
+# --- CONFIGURATION DE TA CLÉ API (VERSION VÉRIFIÉE) ---
 CLE_API = "AIzaSyDAkPn_SpSscF2OJFJ61GmFZzeZCe9hTIw"
 genai.configure(api_key=CLE_API)
 
-# Utilisation du modèle Flash : le plus rapide et le plus fiable
-model = genai.GenerativeModel('gemini-1.5-flash')
+# Correction du modèle pour éviter l'erreur 404
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 # --- PERSONNALITÉ ET IDENTITÉ DE NEXA ---
 SYSTEM_PROMPT = """
@@ -91,5 +92,6 @@ if prompt := st.chat_input("Dis-moi ce que tu veux apprendre aujourd'hui..."):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
         except Exception as e:
-            # Affiche l'erreur si besoin
+            # Affiche l'erreur si besoin pour debugger
             st.error(f"Détails de l'erreur technique : {e}")
+
