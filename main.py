@@ -1,11 +1,11 @@
 import streamlit as st
 import google.generativeai as genai
 
-# --- CONFIGURATION DE TA CLÉ API (MISE À JOUR) ---
-CLE_API = "AIzaSyBDj61VVdhC-9-gvWWorEjcHIKVrqU_0g"
+# --- CONFIGURATION DE TA CLÉ API (VERSION FINALE) ---
+CLE_API = "AIzaSyDAkPn_SpSscF2OJFJ61GmFZzeZCe9hTIw"
 genai.configure(api_key=CLE_API)
 
-# Utilisation du modèle Flash (le plus rapide et gratuit)
+# Utilisation du modèle Flash : le plus rapide et le plus fiable
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 # --- PERSONNALITÉ ET IDENTITÉ DE NEXA ---
@@ -24,7 +24,7 @@ Ton ton doit être celui d'un grand frère protecteur, brillant et inspirant.
 """
 
 # --- CONFIGURATION DE LA PAGE ---
-st.set_page_config(page_title="NEXA Suprême", page_icon="🤖")
+st.set_page_config(page_title="NEXA Suprême", page_icon="🎓")
 
 # --- GESTION DE LA LISTE DES UTILISATEURS (ADMIN) ---
 if 'user_list' not in st.session_state:
@@ -76,7 +76,7 @@ for m in st.session_state.messages:
         st.markdown(m["content"])
 
 # Zone d'écriture
-if prompt := st.chat_input("Pose ta question ici..."):
+if prompt := st.chat_input("Dis-moi ce que tu veux apprendre aujourd'hui..."):
     st.session_state.messages.append({"role": "user", "content": prompt})
     with st.chat_message("user"):
         st.markdown(prompt)
@@ -91,5 +91,5 @@ if prompt := st.chat_input("Pose ta question ici..."):
             st.session_state.messages.append({"role": "assistant", "content": response.text})
             
         except Exception as e:
-            # Affiche l'erreur réelle pour comprendre le problème
+            # Affiche l'erreur si besoin
             st.error(f"Détails de l'erreur technique : {e}")
