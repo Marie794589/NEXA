@@ -1,5 +1,4 @@
-
-    import streamlit as st
+import streamlit as st
 import google.generativeai as genai
 
 # --- CONFIGURATION DE TA CLÉ API (VERSION VÉRIFIÉE) ---
@@ -94,4 +93,3 @@ if prompt := st.chat_input("Dis-moi ce que tu veux apprendre aujourd'hui..."):
         except Exception as e:
             # Affiche l'erreur si besoin pour debugger
             st.error(f"Détails de l'erreur technique : {e}")
-
